@@ -2,8 +2,7 @@ import pygame, random
 
 # Videojuego en el que tienes que recolectar monedas con un personaje que
 # se mueve con las flechas del teclado. Cuando coges una moneda, aparece
-# otra en un lugar al azar de la pantalla.
-# En lugar de monedas hemos usado un pinguino que tiene que coger a un pez
+# otra en un lugar al azar de la pantalla
 
 pygame.init()
 
@@ -13,9 +12,10 @@ ALTO_PANTALLA = 600
 pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 pygame.display.set_caption("Coin collector")
 
-# Cargamos la imagen
-imagePinguino = pygame.image.load("./Coding-games-in-Python/images/pinguino.png")
-imagePececillo = pygame.image.load("./Coding-games-in-Python/images/pececillo.png")
+# Cargamos la imagen y convert_alpha lo usamos para separar la imagen real del
+# fondo que no se ve
+imagePinguino = pygame.image.load("./Coding-games-in-Python/images/pinguino.png").convert_alpha()
+imagePececillo = pygame.image.load("./Coding-games-in-Python/images/pececillo.png").convert_alpha()
 
 # Obtener el rectángulo del sprite y actualizar la posición
 
@@ -36,6 +36,10 @@ posY_pececillo = random.randint(image_rect_pececillo.height,
                       ALTO_PANTALLA-image_rect_pececillo.height)
 posicion_pececillo = (posX_pececillo, posY_pececillo)
 image_rect_pececillo.topleft = posicion_pececillo
+
+# Creamos una máscara para registrar sólo los píxeles visibles (no transparentes)
+pinguino_mask = pygame.mask.from_surface(imagePinguino)
+pececillo_mask = pygame.mask.from_surface(imagePececillo)
 
 # Velocidad en píxeles por fotograma
 player_speed = 5
@@ -63,9 +67,13 @@ while not final:
         image_rect_pinguino.y -= player_speed
     if keys[pygame.K_DOWN] and image_rect_pinguino.bottom < ALTO_PANTALLA:
         image_rect_pinguino.y += player_speed
+   
+    # Detectar colisión entre el jugador y el objetivo usando máscaras
+    offset_x = image_rect_pececillo.x - image_rect_pinguino.x
+    offset_y = image_rect_pececillo.y - image_rect_pinguino.y
 
-    # Cuando el pinguino coge al pez, éste cambia de posición
-    if image_rect_pinguino.colliderect(image_rect_pececillo):
+    # Pececillo
+    if pinguino_mask.overlap(pececillo_mask, (offset_x, offset_y)):
         posX_pececillo = random.randint(image_rect_pececillo.width, 
                         ANCHO_PANTALLA-image_rect_pececillo.width)
         posY_pececillo = random.randint(image_rect_pececillo.height, 
