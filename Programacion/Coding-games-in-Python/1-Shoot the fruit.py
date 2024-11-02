@@ -12,10 +12,16 @@ pantalla = pygame.display.set_mode((ANCHO_PANTALLA, ALTO_PANTALLA))
 pygame.display.set_caption("Shoot the fruit")
 
 # Cargamos la imagen
-image = pygame.image.load("./Coding-games-in-Python/images/apple.png")
+# Usamos convert_alpha para poder separar la imagen real del fondo
+# transparente que no se ve, para que detecte el clic del ratón sólo
+# en la imagen, no en algún fondo transparente que pueda tener
+image = pygame.image.load("./Coding-games-in-Python/images/apple.png").convert_alpha()
 
 # Obtener el rectángulo del sprite
 image_rect = image.get_rect()
+
+# Creamos una máscara para registrar sólo los píxeles visibles (no transparentes)
+manzana_mask = pygame.mask.from_surface(image)
 
 # Actualizamos posición del sprite a una posición al azar
 posX = random.randint(image_rect.width, ANCHO_PANTALLA-image_rect.width)
@@ -42,8 +48,14 @@ while not final:
             # Obtener la posición del clic del ratón
             mouse_x, mouse_y = evento.pos
 
+            # Convertir la posición del clic en coordenadas relativas al rectángulo
+            # Son las coordenadas del clic en relación a la esquina superior 
+            # izquierda del rectángulo que rodea al sprite.
+            rel_x = mouse_x - image_rect.x
+            rel_y = mouse_y - image_rect.y
+
             # Comprobar si el clic fue dentro del sprite
-            if image_rect.collidepoint(mouse_x, mouse_y):
+            if image_rect.collidepoint(mouse_x, mouse_y) and manzana_mask.get_at((rel_x, rel_y)):
                 print("¡Clic en el sprite!") 
 
                 # Colocamos el sprite en otra posición al azar
